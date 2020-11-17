@@ -40,14 +40,16 @@ def batch(batch_size, n_balls=10):
 if __name__ == "__main__":
     # args
     cuda_id = "cuda:0"
-    batch_size = 64
+    batch_size = 128
     pos_in_dim = 2
     vel_in_dim = 2
     edge_in_dim = 4
     hid_dim = 64
-    num_epoch = 5000
+    num_epoch = 10000
     lr = 0.001
-    n_balls = 10
+    n_balls = 20
+
+    flag = "base"
 
     
     device = torch.device(cuda_id)
@@ -58,13 +60,13 @@ if __name__ == "__main__":
 
     print(model)
 
-    val_batch = batch(64, n_balls=10).to(device)
+    val_batch = batch(64, n_balls=n_balls).to(device)
 
     train_loss = []
     val_loss = []
     for epoch in range(num_epoch):
         model.train()
-        train_batch = batch(batch_size, n_balls=10).to(device)
+        train_batch = batch(batch_size, n_balls=n_balls).to(device)
         opt.zero_grad()
         loss = model.loss(train_batch)
         loss.backward()
@@ -78,12 +80,12 @@ if __name__ == "__main__":
             val_loss.append(loss.item())
             print("Epoch = {:<3}: train = {:.10f}, val = {:.10f}".format(
                 epoch, train_loss[-1], val_loss[-1]))
-            torch.save(model.state_dict(), "./checkpoints/spring_scheduler_model.pt")
-            np.save("./checkpoints/train_loss_scheduler.npy", train_loss)
-            np.save("./checkpoints/val_loos_scheduler.npy", val_loss)
+            torch.save(model.state_dict(), "./checkpoints/spring_{}_model.pt".format(flag))
+            np.save("./checkpoints/train_loss_{}.npy".format(flag), train_loss)
+            np.save("./checkpoints/val_loos_{}.npy".format(flag), val_loss)
 
-    torch.save(model.state_dict(), "./checkpoints/spring_scheduler_model.pt")
+    torch.save(model.state_dict(), "./checkpoints/spring_{}_model.pt".format(flag))
     plt.plot(train_loss)
     plt.plot(val_loss)
     plt.legend(["train", "val"])
-    plt.savefig("./figs/loss_scheduler.pdf")
+    plt.savefig("./figs/loss_{}.pdf".format(flag))

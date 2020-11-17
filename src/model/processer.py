@@ -16,5 +16,4 @@ class Processer(nn.Module):
     def forward(self, hidden):
         r"""positions has size of [N, in_dim],
         representing N nodes' hidden status"""
-
         return self.encoder(hidden)

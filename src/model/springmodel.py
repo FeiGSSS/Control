@@ -8,6 +8,8 @@ from src.model.encoder import PositionEncoder, EdgeEncoder, VelocEncoder
 from src.model.processer import Processer
 from src.model.decoder import PositionDecoder, VelocDecoder
 
+from torchdiffeq import odeint_adjoint as odeint
+
 class SpringModel(nn.Module):
     def __init__(self, pos_in_dim=2,
                  edge_in_dim=4, vel_in_dim=2, hid_dim=64):
@@ -38,6 +40,9 @@ class SpringModel(nn.Module):
         
         node_hidden_status = self.process(torch.cat(
             (pos_hid, vel_hid, neighbor_aggs_hid), dim=1))
+        # node_hidden_status = odeint(self.process, 
+        #     torch.cat((pos_hid, vel_hid, neighbor_aggs_hid), dim=1), 
+        #     torch.Tensor([0, 0.001]))
 
         pos_hat = self.pos_decoder(node_hidden_status)
         vel_hat = self.vel_decoder(node_hidden_status)
