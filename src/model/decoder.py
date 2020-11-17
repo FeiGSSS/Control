@@ -8,11 +8,11 @@ class PositionDecoder(nn.Module):
     def __init__(self, in_dim, hid_dim):
         super(PositionDecoder, self).__init__()
         self.encoder = nn.Sequential(
-            nn.Linear(in_dim, hid_dim),
+            nn.Linear(in_dim, in_dim),
             nn.Tanh(),
-            nn.Linear(hid_dim, hid_dim),
+            nn.Linear(in_dim, in_dim),
             nn.Tanh(),
-            nn.Linear(hid_dim, hid_dim)
+            nn.Linear(in_dim, hid_dim)
         )
 
     def forward(self, positions):
@@ -22,11 +22,11 @@ class VelocDecoder(nn.Module):
     def __init__(self, in_dim, hid_dim):
         super(VelocDecoder, self).__init__()
         self.encoder = nn.Sequential(
-            nn.Linear(in_dim, hid_dim),
+            nn.Linear(in_dim, in_dim),
             nn.Tanh(),
-            nn.Linear(hid_dim, hid_dim),
+            nn.Linear(in_dim, in_dim),
             nn.Tanh(),
-            nn.Linear(hid_dim, hid_dim)
+            nn.Linear(in_dim, hid_dim)
         )
 
     def forward(self, positions):

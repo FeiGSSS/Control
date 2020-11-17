@@ -1,11 +1,9 @@
 import torch
-import torch.optim as optim
 import torch_geometric as tg
 
 import networkx as nx
 import numpy as np
 
-from torch.optim.lr_scheduler import StepLR
 from torch_geometric.data import Data, Batch
 from src.model.springmodel import SpringModel
 from src.data_generater.spring import SpringSim
@@ -53,37 +51,14 @@ if __name__ == "__main__":
     device = torch.device(cuda_id)
     model = SpringModel(pos_in_dim, edge_in_dim, vel_in_dim, hid_dim)
     model = model.to(device)
-    opt = optim.AdamW(model.parameters(), lr=lr)
-    scheduler = StepLR(opt, step_size=500, gamma=0.5, verbose=False)
-
-    print(model)
+    model.load_state_dict(torch.load("./checkpoints/spring_model.pt"))
 
     val_batch = batch(64, n_balls=10).to(device)
+    pos_hat, vel_hat = model(val_batch)
+    print(pos_hat - val_batch.pos_n)
+    print(val_batch.pos_f - val_batch.pos_n)
 
-    train_loss = []
-    val_loss = []
-    for epoch in range(num_epoch):
-        model.train()
-        train_batch = batch(batch_size, n_balls=10).to(device)
-        opt.zero_grad()
-        loss = model.loss(train_batch)
-        loss.backward()
-        opt.step()
-        scheduler.step()
+    print(pos_hat.shape)
+    print(vel_hat.shape)
 
-        if epoch % 50 == 0:
-            train_loss.append(loss.item())
-            model.eval()
-            loss = model.loss(val_batch)
-            val_loss.append(loss.item())
-            print("Epoch = {:<3}: train = {:.10f}, val = {:.10f}".format(
-                epoch, train_loss[-1], val_loss[-1]))
-            torch.save(model.state_dict(), "./checkpoints/spring_scheduler_model.pt")
-            np.save("./checkpoints/train_loss_scheduler.npy", train_loss)
-            np.save("./checkpoints/val_loos_scheduler.npy", val_loss)
-
-    torch.save(model.state_dict(), "./checkpoints/spring_scheduler_model.pt")
-    plt.plot(train_loss)
-    plt.plot(val_loss)
-    plt.legend(["train", "val"])
-    plt.savefig("./figs/loss_scheduler.pdf")
+    
