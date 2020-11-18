@@ -2,9 +2,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F 
 
-from torch_scatter import scatter_add
 
-from src.model.encoder import PositionEncoder, EdgeEncoder, VelocEncoder
+
+from src.model.encoder import PositionEncoder, VelocEncoder, NodeEncoder
 from src.model.processer import Processer
 from src.model.decoder import PositionDecoder, VelocDecoder
 
@@ -16,10 +16,11 @@ class SpringModel(nn.Module):
         super(SpringModel, self).__init__()
 
         self.pos_encoder = PositionEncoder(pos_in_dim, hid_dim)
-        self.edge_encoder = EdgeEncoder(edge_in_dim, hid_dim)
         self.vel_encoder = VelocEncoder(vel_in_dim, hid_dim)
+        self.node_encoder = NodeEncoder(2*hid_dim, hid_dim)
 
-        self.process = Processer(3*hid_dim, hid_dim)
+
+        self.process = Processer(hid_dim)
 
         self.pos_decoder = PositionDecoder(hid_dim, pos_in_dim)
         self.vel_decoder = VelocDecoder(hid_dim, vel_in_dim)
@@ -30,22 +31,15 @@ class SpringModel(nn.Module):
         r"""graph should be an undirected graph"""
         pos = graph.pos_f # >> N*2
         vel = graph.vel_f # >> N*2
-        edge_index = graph.edge_index # 2*E, undirected
-        edge_in_feat = torch.cat((pos[edge_index[0]], 
-                                  pos[edge_index[1]]), dim=1) # >> E*4
         pos_hid  = self.pos_encoder(pos)
         vel_hid  = self.vel_encoder(vel)
-        edge_hid = self.edge_encoder(edge_in_feat)
-        neighbor_aggs_hid = scatter_add(src=edge_hid, index=edge_index[1], dim=0)
-        
-        node_hidden_status = self.process(torch.cat(
-            (pos_hid, vel_hid, neighbor_aggs_hid), dim=1))
-        # node_hidden_status = odeint(self.process, 
-        #     torch.cat((pos_hid, vel_hid, neighbor_aggs_hid), dim=1), 
-        #     torch.Tensor([0, 0.001]))
+        node_hidden = self.node_encoder(torch.cat((pos_hid, vel_hid), dim=1)) # >> N*(hid_dim)
 
-        pos_hat = self.pos_decoder(node_hidden_status)
-        vel_hat = self.vel_decoder(node_hidden_status)
+        self.process.edge_index = graph.edge_index
+        node_hidden = self.process(node_hidden)        
+
+        pos_hat = self.pos_decoder(node_hidden)
+        vel_hat = self.vel_decoder(node_hidden)
 
         return pos_hat, vel_hat
 

@@ -21,6 +21,23 @@ class PositionEncoder(nn.Module):
 
         return self.encoder(positions)
 
+class NodeEncoder(nn.Module):
+    def __init__(self, in_dim, hid_dim):
+        super(NodeEncoder, self).__init__()
+        self.encoder = nn.Sequential(
+            nn.Linear(in_dim, hid_dim),
+            nn.Tanh(),
+            nn.Linear(hid_dim, hid_dim),
+            nn.Tanh(),
+            nn.Linear(hid_dim, hid_dim)
+        )
+
+    def forward(self, nodes):
+        r"""positions has size of [N, in_dim],
+        representing N nodes' postions"""
+
+        return self.encoder(nodes)
+
 class VelocEncoder(nn.Module):
     def __init__(self, in_dim, hid_dim):
         super(VelocEncoder, self).__init__()
