@@ -14,6 +14,7 @@ class SpringModel(nn.Module):
     def __init__(self, pos_in_dim=2,
                  edge_in_dim=4, vel_in_dim=2, hid_dim=64):
         super(SpringModel, self).__init__()
+        self.edge_index = []
 
         self.pos_encoder = PositionEncoder(pos_in_dim, hid_dim)
         self.edge_encoder = EdgeEncoder(edge_in_dim, hid_dim)
@@ -26,11 +27,12 @@ class SpringModel(nn.Module):
 
         self.loss_fn = nn.MSELoss()
 
-    def forward(self, graph):
-        r"""graph should be an undirected graph"""
-        pos = graph.pos_f # >> N*2
-        vel = graph.vel_f # >> N*2
-        edge_index = graph.edge_index # 2*E, undirected
+    def forward(self, node_f):
+        r"""node_f has size of N*4, and it's the concatenane of nodes position and veloc"""
+        assert self.edge_index is not []
+        pos = node_f[:,:2] # >> N*2
+        vel = node_f[:,2:] # >> N*2
+        edge_index = self.edge_index # 2*E, undirected
         edge_in_feat = torch.cat((pos[edge_index[0]], 
                                   pos[edge_index[1]]), dim=1) # >> E*4
         pos_hid  = self.pos_encoder(pos)
@@ -47,18 +49,7 @@ class SpringModel(nn.Module):
         pos_hat = self.pos_decoder(node_hidden_status)
         vel_hat = self.vel_decoder(node_hidden_status)
 
-        return pos_hat, vel_hat
-
-    def loss(self, graph):
-        pos_true = graph.pos_n
-        vel_true = graph.vel_n
-
-        pos_hat, vel_hat = self.forward(graph)
-
-        loss_pos = self.loss_fn(pos_hat, pos_true)
-        loss_vel = self.loss_fn(vel_hat, vel_true)
-
-        return loss_pos + loss_vel
+        return torch.cat((pos_hat, vel_hat), dim=1)
 
 
         
