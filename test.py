@@ -36,7 +36,6 @@ def batch(batch_size, n_balls=10):
     return batch
 
 if __name__ == "__main__":
-    # args
     cuda_id = "cuda:0"
     batch_size = 64
     pos_in_dim = 2
