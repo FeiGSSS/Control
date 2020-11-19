@@ -40,7 +40,7 @@ def batch(batch_size, n_balls=10):
 if __name__ == "__main__":
     # args
     cuda_id = "cuda:0"
-    batch_size = 64
+    batch_size = 128
     pos_in_dim = 2
     vel_in_dim = 2
     edge_in_dim = 4
@@ -56,11 +56,11 @@ if __name__ == "__main__":
     model = SpringModel(pos_in_dim, edge_in_dim, vel_in_dim, hid_dim)
     model = model.to(device)
     opt = optim.AdamW(model.parameters(), lr=lr)
-    scheduler = StepLR(opt, step_size=500, gamma=0.5, verbose=False)
+    scheduler = StepLR(opt, step_size=500, gamma=0.8, verbose=False)
 
     print(model)
 
-    val_batch = batch(64, n_balls=n_balls).to(device)
+    val_batch = batch(batch_size, n_balls=n_balls).to(device)
 
     train_loss = []
     val_loss = []
