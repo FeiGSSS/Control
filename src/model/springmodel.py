@@ -27,7 +27,7 @@ class SpringModel(nn.Module):
 
         self.loss_fn = nn.MSELoss()
 
-    def forward(self, node_f):
+    def forward(self, t, node_f):
         r"""node_f has size of N*4, and it's the concatenane of nodes position and veloc"""
         assert self.edge_index is not []
         pos = node_f[:,:2] # >> N*2

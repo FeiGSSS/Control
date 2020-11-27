@@ -2,7 +2,8 @@ import numpy as np
 import networkx as nx
 
 class SpringSim(object):
-    def __init__(self, n_balls=5, box_size=5., loc_std=3, vel_norm=.5, interaction_strength=.1, noise_var=0.):
+    def __init__(self, n_balls=5, box_size=5., loc_std=3, vel_norm=.5, 
+                interaction_strength=.1, noise_var=0., _delta_T=0.001):
         self.n_balls = n_balls
         self.box_size = box_size
         self.loc_std = loc_std
@@ -10,7 +11,7 @@ class SpringSim(object):
         self.interaction_strength = interaction_strength
         self.noise_var = noise_var
 
-        self._delta_T = 0.001
+        self._delta_T = _delta_T
         self._max_F = 0.1 / self._delta_T
 
 
