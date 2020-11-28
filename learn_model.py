@@ -26,14 +26,14 @@ warnings.filterwarnings("ignore")
 
 if __name__ == "__main__":
     # args
-    cuda_id = "cuda:0"
+    cuda_id = "cuda:1"
     prediction_step = 40
     pos_in_dim = 2
     vel_in_dim = 2
     edge_in_dim = 4
     hid_dim = 64
     num_epoch = 60000
-    lr = 0.01
+    lr = 0.001
     n_balls = 30
     datasize = 3000
     new_data = True
@@ -60,8 +60,8 @@ if __name__ == "__main__":
 
     train_loss = []
     val_loss = []
+    t0 = time.time()
     for epoch in range(num_epoch):
-        t0 = time.time()
         opt.zero_grad()
         model.train()
         train_batch = train_set[np.random.choice(range(datasize))].to(device)
@@ -74,7 +74,7 @@ if __name__ == "__main__":
         opt.step()
         scheduler.step()
 
-        if epoch % 5 == 0:
+        if epoch % 50 == 0:
             train_loss.append(loss.item())
             model.eval()
             model.edge_index = val_batch.edge_index

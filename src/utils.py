@@ -14,6 +14,7 @@ import numpy as np
 import networkx as nx
 import pickle as pkl
 from  multiprocessing import Pool
+from tqdm import tqdm
 
 import torch
 import torch_geometric as tg
@@ -71,13 +72,13 @@ def generate_data(new_data, data_save_path, data_size, **kargs):
     print("--> Generating Dataset")
     t0 = time.time()
     if new_data:
-        pool = Pool(30)
+        pool = Pool(60)
         process = []
         for _ in range(data_size):
             process.append(pool.apply_async(sample, tuple(kargs.values())))
         pool.close()
         pool.join()
-        for res in process:
+        for res in tqdm(process):
             dataset.append(res.get())
         
         with open(data_save_path, "wb") as f:
