@@ -17,6 +17,7 @@ from  multiprocessing import Pool
 from tqdm import tqdm
 
 import torch
+from torch.utils.data import Dataset
 import torch_geometric as tg
 from torch_geometric.data import Data, Batch
 
@@ -88,3 +89,42 @@ def generate_data(new_data, data_save_path, data_size, **kargs):
             dataset = pkl.load(f)
     print("-->DataSize = {}, Time = {:.1f}s".format(data_size, time.time()-t0))
     return dataset
+ 
+class mydataset(Dataset):
+    """
+    This is a custom class of dataset
+    """
+    def __init__(self, data_list):
+        super(mydataset, self).__init__()
+        self.data_list = data_list
+
+    def __len__(self):
+        return len(self.data_list)
+    
+    def __getitem__(self, idx):
+        return self.data_list[idx]
+
+def collate_fn(graph_list):
+    """
+    batch_list contains pyg.Data like:
+    Data(delta_t=[501], edge_index=[2, 162], pos_0=[30, 2], pos_res=[500, 30, 2], vel_0=[30, 2], vel_res=[500, 30, 2])
+    delta_t is the same for every sample, i.e. this version of dataloader does not support irregular sampling.
+    500 or 501 is the No. of time steps
+    162 is the Np. of edges
+    30 if the #of nodes
+    """
+    assert len(graph_list) >= 1
+    if len(graph_list) == 1:
+        return graph_list[0]
+    batch_delta_t = graph_list[0].delta_t
+    batch_pos_res = []
+    batch_vel_res = []
+    batch = Batch.from_data_list(graph_list)
+    for g in graph_list:
+        batch_pos_res.append(g.pos_res)
+        batch_vel_res.append(g.vel_res)
+    batch.delta_t = batch_delta_t
+    batch.pos_res = torch.cat(batch_pos_res, dim=1)
+    batch.vel_res = torch.cat(batch_vel_res, dim=1)
+
+    return batch
