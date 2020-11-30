@@ -32,3 +32,17 @@ class VelocDecoder(nn.Module):
     def forward(self, positions):
         return self.encoder(positions)
 
+class NodeDecoder(nn.Module):
+    def __init__(self, in_dim, hid_dim):
+        super(NodeDecoder, self).__init__()
+        self.encoder = nn.Sequential(
+            nn.Linear(in_dim, in_dim),
+            nn.Tanh(),
+            nn.Linear(in_dim, in_dim),
+            nn.Tanh(),
+            nn.Linear(in_dim, hid_dim)
+        )
+
+    def forward(self, positions):
+        return self.encoder(positions)
+

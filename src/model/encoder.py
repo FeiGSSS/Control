@@ -51,3 +51,17 @@ class EdgeEncoder(nn.Module):
         r"""velocs has size of [E, in_dim],
         representing N nodes' edge features"""
         return self.encoder(edges)
+
+class NodeEncoder(nn.Module):
+    def __init__(self, in_dim, hid_dim):
+        super(NodeEncoder, self).__init__()
+        self.encoder = nn.Sequential(
+            nn.Linear(in_dim, hid_dim),
+            nn.Tanh(),
+            nn.Linear(hid_dim, hid_dim),
+            nn.Tanh(),
+            nn.Linear(hid_dim, hid_dim)
+        )
+
+    def forward(self, node_feature):
+        return self.encoder(node_feature)

@@ -38,9 +38,9 @@ if __name__ == "__main__":
     bz = 1
     n_balls = 30
     datasize = 3000
-    new_data = True
+    new_data = False
     noise = None
-    flag = "batch"
+    flag = "dopri5"
 
     data_save_path = "./data/dataset_nb_{:d}_step_{:d}.pkl".format(n_balls, prediction_step)
     model_save_path = "./checkpoints/spring_{}_model.pt".format(flag)
@@ -74,7 +74,7 @@ if __name__ == "__main__":
             model.edge_index = train_batch.edge_index
             node_f = torch.cat((train_batch.pos_0, train_batch.vel_0), dim=1)
             node_n = torch.cat((train_batch.pos_res, train_batch.vel_res), dim=2)
-            pred_node_n = odeint(func=model, y0=node_f, t=train_batch.delta_t, method="rk4")
+            pred_node_n = odeint(func=model, y0=node_f, t=train_batch.delta_t, method="dopri5")
             loss = model.loss_fn(pred_node_n[1:], node_n)
             loss.backward()
             opt.step()
