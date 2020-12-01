@@ -1,3 +1,5 @@
+import sys
+sys.path.append("..")
 import numpy as np
 import matplotlib.pyplot as plt
 import time
@@ -10,12 +12,13 @@ import moviepy.editor as mpy
 
 from src.data_generater.spring import SpringSim
 
+
 if __name__ == "__main__":
     model = SpringSim(n_balls=10)
     loc, vel, adj = model.sample_trajectory()
     fig_mpl, ax = plt.subplots(1,figsize=(10,6), facecolor='white')
 
-    FPS = 60
+    FPS = 120
 
     def draw(G, one_sec_loc):
         count = one_sec_loc.shape[0]
@@ -35,11 +38,11 @@ if __name__ == "__main__":
     def make_frame_mpl(t):
         ax.clear()
         t = int(t*FPS)+1
-        one_sec_loc = loc[(t-60):(t+1)].reshape(-1, 10, 2) if t>60 else loc[:t].reshape(-1, 10, 2)
+        one_sec_loc = loc[(t-FPS):(t+1)].reshape(-1, 10, 2) if t>FPS else loc[:t].reshape(-1, 10, 2)
         draw(G, one_sec_loc)
         return mplfig_to_npimage(fig_mpl) # 图形的RGB图像
 
     G = nx.Graph()
     G = nx.from_numpy_array(adj)
     animation =mpy.VideoClip(make_frame_mpl, duration=5)
-    animation.write_gif("gifs/spring.gif", fps=FPS)
+    animation.write_gif("../gifs/spring.gif", fps=FPS)
